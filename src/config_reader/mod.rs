@@ -5,6 +5,7 @@ pub struct Config {
     pub max_temperature: f32,
 }
 
+#[mockall::automock]
 pub trait ParseConfig {
     fn get_config(&self) -> Result<Option<Config>, std::io::Error>;
 }
@@ -27,7 +28,7 @@ impl ParseConfig for ConfigReader {
         buffer_reader.read_line(&mut buffer)?;
         let values = buffer.split_whitespace().collect::<Vec<&str>>();
         if values.len() < 2 {
-            eprintln!("Did not correct config values");
+            eprintln!("Did not enter correct config values");
             return Ok(None);
         }
 
@@ -40,7 +41,6 @@ impl ParseConfig for ConfigReader {
             }
         };
 
-      //  buffer_reader.read_line(&mut buffer)?;
         let max_temperature = match values[1].trim().parse::<f32>() {
             Ok(result) => result,
             Err(err) => {
@@ -54,5 +54,85 @@ impl ParseConfig for ConfigReader {
             min_temperature,
             max_temperature,
         }))
+    }
+}
+
+#[cfg(test)]
+mod tests{
+    use super::*;
+
+    #[test]
+    fn correct_config() {
+        let correct_config_file_path = "test_configs/correct_config.txt";
+        let config_reader = ConfigReader{
+            config_file_name:correct_config_file_path.to_string()
+        };
+        let expected_min_temperature = -9.0;
+        let expected_max_temperature = 15.0;
+
+        let config = config_reader.get_config();
+        assert!(config.is_ok());
+        let config = config.unwrap();
+        assert!(config.is_some());
+        let config = config.unwrap();
+        assert!(float_cmp::approx_eq!(f32, config.min_temperature, expected_min_temperature, epsilon=0.000001));
+        assert!(float_cmp::approx_eq!(f32, config.max_temperature, expected_max_temperature, epsilon=0.000001));
+    }
+
+    #[test]
+    fn missing_config_file() {
+        let config_file_path = "test_configs/missing_file";
+        let config_reader = ConfigReader{
+            config_file_name: config_file_path.to_string(),
+        };
+
+        let config = config_reader.get_config();
+        assert!(config.is_err());
+
+        let config_error = config.err().unwrap();
+        assert!(config_error.to_string() == "No such file or directory (os error 2)");
+    }
+
+    #[test]
+    fn partial_config_file() {
+        let config_file_path = "test_configs/partial_config.txt";
+        let config_reader = ConfigReader{
+            config_file_name: config_file_path.to_string(),
+        };
+
+        let config = config_reader.get_config();
+        assert!(config.is_ok());
+
+        let config = config.unwrap();
+        assert!(config.is_none());
+    }
+
+    #[test]
+    fn garbage_config_file() {
+        let config_file_path = "test_configs/garbage_config.txt";
+        let config_reader = ConfigReader{
+            config_file_name: config_file_path.to_string(),
+        };
+
+        let config = config_reader.get_config();
+        assert!(config.is_ok());
+
+        let config = config.unwrap();
+        assert!(config.is_none());
+    }
+
+
+    #[test]
+    fn empty_config_file() {
+        let config_file_path = "test_configs/empty_config.txt";
+        let config_reader = ConfigReader{
+            config_file_name: config_file_path.to_string(),
+        };
+
+        let config = config_reader.get_config();
+        assert!(config.is_ok());
+
+        let config = config.unwrap();
+        assert!(config.is_none());
     }
 }

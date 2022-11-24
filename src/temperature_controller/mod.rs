@@ -97,8 +97,123 @@ impl HandleTemperature for TemperatureController {
     }
 }
 
+#[derive(PartialEq)]
 pub enum SystemState {
     Idle,
     Heating,
     Cooling,
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        config_reader::{self, Config},
+        temperature_modifier, temperature_sensor,
+    };
+
+    use super::*;
+
+    #[test]
+    fn temperature_in_parameters() {
+        let mut config_reader_mock = Box::new(config_reader::MockParseConfig::new());
+        let mut temperature_sensor_mock = Box::new(temperature_sensor::MockFetchTemperature::new());
+        let temperature_modifier_mock =
+            Box::new(temperature_modifier::MockModifyTemperature::new());
+
+        config_reader_mock.expect_get_config().returning(|| {
+            Ok(Some(Config {
+                min_temperature: -5f32,
+                max_temperature: 10f32,
+            }))
+        });
+        temperature_sensor_mock
+            .expect_get_current_temperature()
+            .returning(|| Some(5f32));
+
+        let mut temperature_controller: TemperatureController = TemperatureController::build(
+            temperature_sensor_mock,
+            temperature_modifier_mock,
+            config_reader_mock,
+        );
+
+        let temperature_updated = temperature_controller.update_temperature();
+        assert!(temperature_updated.is_ok());
+    }
+
+    #[test]
+    fn temperature_below_parameters() {
+        let mut config_reader_mock = Box::new(config_reader::MockParseConfig::new());
+        let mut temperature_sensor_mock = Box::new(temperature_sensor::MockFetchTemperature::new());
+        let mut temperature_modifier_mock =
+            Box::new(temperature_modifier::MockModifyTemperature::new());
+
+        config_reader_mock.expect_get_config().returning(|| {
+            Ok(Some(Config {
+                min_temperature: -5f32,
+                max_temperature: 10f32,
+            }))
+        });
+        temperature_sensor_mock
+            .expect_get_current_temperature()
+            .returning(|| Some(-7f32));
+
+        temperature_modifier_mock.expect_raise_temperature().returning(|_| Ok(()));
+        
+        let mut temperature_controller: TemperatureController = TemperatureController::build(
+            temperature_sensor_mock,
+            temperature_modifier_mock,
+            config_reader_mock,
+        );
+
+        let temperature_updated = temperature_controller.update_temperature();
+        assert!(temperature_updated.is_ok());
+        let expected_state = SystemState::Heating;
+        let current_state = temperature_controller.get_current_state();
+        assert!(*current_state == expected_state);
+
+        let temperature_updated = temperature_controller.update_temperature();
+        assert!(temperature_updated.is_ok());
+        let expected_state = SystemState::Idle;
+        let current_state = temperature_controller.get_current_state();
+        assert!(*current_state == expected_state);
+
+    }
+
+    #[test]
+    fn temperature_above_parameters() {
+        let mut config_reader_mock = Box::new(config_reader::MockParseConfig::new());
+        let mut temperature_sensor_mock = Box::new(temperature_sensor::MockFetchTemperature::new());
+        let mut temperature_modifier_mock =
+            Box::new(temperature_modifier::MockModifyTemperature::new());
+
+        config_reader_mock.expect_get_config().returning(|| {
+            Ok(Some(Config {
+                min_temperature: -5f32,
+                max_temperature: 10f32,
+            }))
+        });
+        temperature_sensor_mock
+            .expect_get_current_temperature()
+            .returning(|| Some(15f32));
+            
+        temperature_modifier_mock.expect_lower_temperature().returning(|_| Ok(()));
+        
+        let mut temperature_controller: TemperatureController = TemperatureController::build(
+            temperature_sensor_mock,
+            temperature_modifier_mock,
+            config_reader_mock,
+        );
+
+        let temperature_updated = temperature_controller.update_temperature();
+        assert!(temperature_updated.is_ok());
+        let expected_state = SystemState::Cooling;
+        let current_state = temperature_controller.get_current_state();
+        assert!(*current_state == expected_state);
+
+        let temperature_updated = temperature_controller.update_temperature();
+        assert!(temperature_updated.is_ok());
+        let expected_state = SystemState::Idle;
+        let current_state = temperature_controller.get_current_state();
+        assert!(*current_state == expected_state);
+    }
 }
