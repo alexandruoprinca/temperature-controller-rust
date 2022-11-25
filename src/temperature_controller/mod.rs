@@ -156,8 +156,10 @@ mod tests {
             .expect_get_current_temperature()
             .returning(|| Some(-7f32));
 
-        temperature_modifier_mock.expect_raise_temperature().returning(|_| Ok(()));
-        
+        temperature_modifier_mock
+            .expect_raise_temperature()
+            .returning(|_| Ok(()));
+
         let mut temperature_controller: TemperatureController = TemperatureController::build(
             temperature_sensor_mock,
             temperature_modifier_mock,
@@ -175,7 +177,6 @@ mod tests {
         let expected_state = SystemState::Idle;
         let current_state = temperature_controller.get_current_state();
         assert!(current_state == expected_state);
-
     }
 
     #[test]
@@ -194,9 +195,11 @@ mod tests {
         temperature_sensor_mock
             .expect_get_current_temperature()
             .returning(|| Some(15f32));
-            
-        temperature_modifier_mock.expect_lower_temperature().returning(|_| Ok(()));
-        
+
+        temperature_modifier_mock
+            .expect_lower_temperature()
+            .returning(|_| Ok(()));
+
         let mut temperature_controller: TemperatureController = TemperatureController::build(
             temperature_sensor_mock,
             temperature_modifier_mock,

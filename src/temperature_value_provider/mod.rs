@@ -7,11 +7,10 @@ fn generate_random_temperature() -> f32 {
     rand::thread_rng().gen_range(-35..35) as f32
 }
 
-pub struct TemperatureValueProvider {
-}
+pub struct TemperatureValueProvider {}
 
-impl TemperatureValueProvider{
-    pub fn get_current_temperature() -> f32{
+impl TemperatureValueProvider {
+    pub fn get_current_temperature() -> f32 {
         return *TEMPERATURE.lock().unwrap();
     }
 

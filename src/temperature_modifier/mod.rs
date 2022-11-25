@@ -6,10 +6,10 @@ pub trait ModifyTemperature {
     fn raise_temperature(&self, target_temperature: f32) -> Result<(), &'static str>;
 }
 
-pub struct TemperatureModifier{}
+pub struct TemperatureModifier {}
 
 impl ModifyTemperature for TemperatureModifier {
-    fn lower_temperature(&self, target_temperature :f32) -> Result<(), &'static str> {
+    fn lower_temperature(&self, target_temperature: f32) -> Result<(), &'static str> {
         let mut current_temperature: f32;
         loop {
             current_temperature = TemperatureValueProvider::get_current_temperature();
@@ -22,7 +22,7 @@ impl ModifyTemperature for TemperatureModifier {
         }
     }
 
-    fn raise_temperature(&self, target_temperature :f32) -> Result<(), &'static str> {
+    fn raise_temperature(&self, target_temperature: f32) -> Result<(), &'static str> {
         let mut current_temperature: f32;
         loop {
             current_temperature = TemperatureValueProvider::get_current_temperature();
@@ -42,7 +42,7 @@ mod tests {
 
     #[test]
     fn raise_above_current() {
-        let temperature_modifier = TemperatureModifier{};
+        let temperature_modifier = TemperatureModifier {};
         let initial_temperature = 5f32;
         TemperatureValueProvider::set_current_temperature(initial_temperature);
         let expected_temperature = 10f32;
@@ -52,12 +52,17 @@ mod tests {
 
         assert!(temperature_was_modified.is_ok());
         let current_temperature = TemperatureValueProvider::get_current_temperature();
-        assert!(float_cmp::approx_eq!(f32, current_temperature, expected_temperature, epsilon=0.000001));
+        assert!(float_cmp::approx_eq!(
+            f32,
+            current_temperature,
+            expected_temperature,
+            epsilon = 0.000001
+        ));
     }
 
     #[test]
     fn raise_below_current() {
-        let temperature_modifier = TemperatureModifier{};
+        let temperature_modifier = TemperatureModifier {};
         let initial_temperature = 5f32;
         TemperatureValueProvider::set_current_temperature(initial_temperature);
         let expected_temperature = 5f32;
@@ -67,12 +72,17 @@ mod tests {
 
         assert!(temperature_was_modified.is_ok());
         let current_temperature = TemperatureValueProvider::get_current_temperature();
-        assert!(float_cmp::approx_eq!(f32, current_temperature, expected_temperature, epsilon=0.000001));
+        assert!(float_cmp::approx_eq!(
+            f32,
+            current_temperature,
+            expected_temperature,
+            epsilon = 0.000001
+        ));
     }
 
     #[test]
     fn lower_below_current() {
-        let temperature_modifier = TemperatureModifier{};
+        let temperature_modifier = TemperatureModifier {};
         let initial_temperature = 5f32;
         TemperatureValueProvider::set_current_temperature(initial_temperature);
         let expected_temperature = 3f32;
@@ -82,12 +92,17 @@ mod tests {
 
         assert!(temperature_was_modified.is_ok());
         let current_temperature = TemperatureValueProvider::get_current_temperature();
-        assert!(float_cmp::approx_eq!(f32, current_temperature, expected_temperature, epsilon=0.000001));
+        assert!(float_cmp::approx_eq!(
+            f32,
+            current_temperature,
+            expected_temperature,
+            epsilon = 0.000001
+        ));
     }
 
     #[test]
     fn lower_above_current() {
-        let temperature_modifier = TemperatureModifier{};
+        let temperature_modifier = TemperatureModifier {};
         let initial_temperature = 5f32;
         TemperatureValueProvider::set_current_temperature(initial_temperature);
         let expected_temperature = 5f32;
@@ -97,6 +112,11 @@ mod tests {
 
         assert!(temperature_was_modified.is_ok());
         let current_temperature = TemperatureValueProvider::get_current_temperature();
-        assert!(float_cmp::approx_eq!(f32, current_temperature, expected_temperature, epsilon=0.000001));
+        assert!(float_cmp::approx_eq!(
+            f32,
+            current_temperature,
+            expected_temperature,
+            epsilon = 0.000001
+        ));
     }
 }

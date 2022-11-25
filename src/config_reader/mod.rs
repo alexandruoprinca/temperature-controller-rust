@@ -80,14 +80,13 @@ impl ReadConfig for ConfigFileReader {
 impl ReadConfig for ConfigSqlReader {
     fn get_config(&self) -> Result<Option<Config>, Box<dyn std::error::Error>> {
         let mut conn = self.pool.get_conn()?;
-        let result = conn
-            .query_map(
-                r#"SELECT min_temperature, max_temperature FROM Config"#,
-                |(min_temperature, max_temperature)| Config {
-                    min_temperature,
-                    max_temperature,
-                },
-            )?;
+        let result = conn.query_map(
+            r#"SELECT min_temperature, max_temperature FROM Config"#,
+            |(min_temperature, max_temperature)| Config {
+                min_temperature,
+                max_temperature,
+            },
+        )?;
         if result.len() != 0 {
             return Ok(Some(result[0]));
         }
