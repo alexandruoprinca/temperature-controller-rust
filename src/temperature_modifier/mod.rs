@@ -43,10 +43,10 @@ mod tests {
     #[test]
     fn raise_above_current() {
         let temperature_modifier = TemperatureModifier{};
-        let initial_temperature = 5 as f32;
+        let initial_temperature = 5f32;
         TemperatureValueProvider::set_current_temperature(initial_temperature);
-        let expected_temperature = 10 as f32;
-        let target_temperature = 10 as f32;
+        let expected_temperature = 10f32;
+        let target_temperature = 10f32;
 
         let temperature_was_modified = temperature_modifier.raise_temperature(target_temperature);
 
@@ -58,10 +58,10 @@ mod tests {
     #[test]
     fn raise_below_current() {
         let temperature_modifier = TemperatureModifier{};
-        let initial_temperature = 5 as f32;
+        let initial_temperature = 5f32;
         TemperatureValueProvider::set_current_temperature(initial_temperature);
-        let expected_temperature = 5 as f32;
-        let target_temperature = 3 as f32;
+        let expected_temperature = 5f32;
+        let target_temperature = 3f32;
 
         let temperature_was_modified = temperature_modifier.raise_temperature(target_temperature);
 
@@ -73,10 +73,10 @@ mod tests {
     #[test]
     fn lower_below_current() {
         let temperature_modifier = TemperatureModifier{};
-        let initial_temperature = 5 as f32;
+        let initial_temperature = 5f32;
         TemperatureValueProvider::set_current_temperature(initial_temperature);
-        let expected_temperature = 3 as f32;
-        let target_temperature = 3 as f32;
+        let expected_temperature = 3f32;
+        let target_temperature = 3f32;
 
         let temperature_was_modified = temperature_modifier.lower_temperature(target_temperature);
 
@@ -88,10 +88,10 @@ mod tests {
     #[test]
     fn lower_above_current() {
         let temperature_modifier = TemperatureModifier{};
-        let initial_temperature = 5 as f32;
+        let initial_temperature = 5f32;
         TemperatureValueProvider::set_current_temperature(initial_temperature);
-        let expected_temperature = 5 as f32;
-        let target_temperature = 10 as f32;
+        let expected_temperature = 5f32;
+        let target_temperature = 10f32;
 
         let temperature_was_modified = temperature_modifier.lower_temperature(target_temperature);
 

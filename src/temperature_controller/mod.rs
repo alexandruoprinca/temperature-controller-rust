@@ -1,16 +1,16 @@
-use crate::config_reader::ParseConfig;
+use crate::config_reader::ReadConfig;
 use crate::temperature_modifier::ModifyTemperature;
 use crate::temperature_sensor::FetchTemperature;
 
 pub trait HandleTemperature {
-    fn update_temperature(&mut self) -> Result<(), String>;
-    fn get_current_state(&self) -> &SystemState;
+    fn update_temperature(&mut self) -> Result<(), std::borrow::Cow<'static, str>>;
+    fn get_current_state(&self) -> SystemState;
 }
 
 pub struct TemperatureController {
     sensor: Box<dyn FetchTemperature>,
     temperature_modifier: Box<dyn ModifyTemperature>,
-    config_reader: Box<dyn ParseConfig>,
+    config_reader: Box<dyn ReadConfig>,
     current_state: SystemState,
 }
 
@@ -18,7 +18,7 @@ impl TemperatureController {
     pub fn build(
         sensor: Box<dyn FetchTemperature>,
         temperature_modifier: Box<dyn ModifyTemperature>,
-        config_reader: Box<dyn ParseConfig>,
+        config_reader: Box<dyn ReadConfig>,
     ) -> Self {
         TemperatureController {
             sensor,
@@ -34,23 +34,22 @@ impl TemperatureController {
 }
 
 impl HandleTemperature for TemperatureController {
-    fn get_current_state(&self) -> &SystemState {
-        &self.current_state
+    fn get_current_state(&self) -> SystemState {
+        self.current_state
     }
 
-    //maybe this should not be String, figure out
-    fn update_temperature(&mut self) -> Result<(), String> {
+    fn update_temperature(&mut self) -> Result<(), std::borrow::Cow<'static, str>> {
         let config = match self.config_reader.get_config() {
             Ok(result) => result,
-            Err(err) => return Err(std::format!("Failed to read config file: {err}")),
+            Err(err) => return Err(std::format!("Failed to read config file: {err}").into()),
         };
         let config = match config {
             Some(val) => val,
-            None => return Err(std::format!("Failed to parse config")),
+            None => return Err("Failed to parse config".into()),
         };
         let current_temperature = match self.sensor.get_current_temperature() {
             Some(val) => val,
-            None => return Err(std::format!("Failed to read sensor data")),
+            None => return Err("Failed to read sensor data".into()),
         };
 
         match self.current_state {
@@ -63,7 +62,7 @@ impl HandleTemperature for TemperatureController {
                     self.change_system_state(SystemState::Cooling);
                 } else {
                     println!(
-                        "Temperature {current_temperature} is withing parameters {} and {}",
+                        "Temperature {current_temperature} is within parameters {} and {}",
                         config.min_temperature, config.max_temperature
                     );
                 }
@@ -97,7 +96,7 @@ impl HandleTemperature for TemperatureController {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum SystemState {
     Idle,
     Heating,
@@ -115,7 +114,7 @@ mod tests {
 
     #[test]
     fn temperature_in_parameters() {
-        let mut config_reader_mock = Box::new(config_reader::MockParseConfig::new());
+        let mut config_reader_mock = Box::new(config_reader::MockReadConfig::new());
         let mut temperature_sensor_mock = Box::new(temperature_sensor::MockFetchTemperature::new());
         let temperature_modifier_mock =
             Box::new(temperature_modifier::MockModifyTemperature::new());
@@ -142,7 +141,7 @@ mod tests {
 
     #[test]
     fn temperature_below_parameters() {
-        let mut config_reader_mock = Box::new(config_reader::MockParseConfig::new());
+        let mut config_reader_mock = Box::new(config_reader::MockReadConfig::new());
         let mut temperature_sensor_mock = Box::new(temperature_sensor::MockFetchTemperature::new());
         let mut temperature_modifier_mock =
             Box::new(temperature_modifier::MockModifyTemperature::new());
@@ -169,19 +168,19 @@ mod tests {
         assert!(temperature_updated.is_ok());
         let expected_state = SystemState::Heating;
         let current_state = temperature_controller.get_current_state();
-        assert!(*current_state == expected_state);
+        assert!(current_state == expected_state);
 
         let temperature_updated = temperature_controller.update_temperature();
         assert!(temperature_updated.is_ok());
         let expected_state = SystemState::Idle;
         let current_state = temperature_controller.get_current_state();
-        assert!(*current_state == expected_state);
+        assert!(current_state == expected_state);
 
     }
 
     #[test]
     fn temperature_above_parameters() {
-        let mut config_reader_mock = Box::new(config_reader::MockParseConfig::new());
+        let mut config_reader_mock = Box::new(config_reader::MockReadConfig::new());
         let mut temperature_sensor_mock = Box::new(temperature_sensor::MockFetchTemperature::new());
         let mut temperature_modifier_mock =
             Box::new(temperature_modifier::MockModifyTemperature::new());
@@ -208,12 +207,12 @@ mod tests {
         assert!(temperature_updated.is_ok());
         let expected_state = SystemState::Cooling;
         let current_state = temperature_controller.get_current_state();
-        assert!(*current_state == expected_state);
+        assert!(current_state == expected_state);
 
         let temperature_updated = temperature_controller.update_temperature();
         assert!(temperature_updated.is_ok());
         let expected_state = SystemState::Idle;
         let current_state = temperature_controller.get_current_state();
-        assert!(*current_state == expected_state);
+        assert!(current_state == expected_state);
     }
 }

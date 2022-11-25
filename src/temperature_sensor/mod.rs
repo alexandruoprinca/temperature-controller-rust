@@ -21,7 +21,7 @@ mod tests {
     #[test]
     fn fetch_temperature() {
         TemperatureValueProvider::set_current_temperature(5.0);
-        let expected_temperature: f32 = 5 as f32;
+        let expected_temperature: f32 = 5f32;
         let sensor = TemperatureSensor{};
         assert!(float_cmp::approx_eq!(f32, sensor.get_current_temperature().unwrap(), expected_temperature, epsilon=0.000001));
     }
