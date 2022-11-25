@@ -36,7 +36,6 @@ impl ConfigSqlReader {
 }
 
 fn extract_config_from_line(line: &str) -> Option<Config> {
-    println!("Receiving config {}", line);
     let values = line.split_whitespace().collect::<Vec<&str>>();
     if values.len() < 2 {
         eprintln!("Did not enter correct config values");
