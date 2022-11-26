@@ -12,22 +12,25 @@ fn wait_before_polling() {
 
 fn main() {
     let config_file_name = String::from("config.txt");
-    let config_file_reader: Box<dyn config_reader::ReadConfig> =
+    let _config_file_reader: Box<dyn config_reader::ReadConfig> =
         Box::new(config_reader::ConfigFileReader::new(config_file_name));
 
     let config_connection_string = String::from(r#"mysql://root:root@localhost:3306/thermostat"#);
-    let config_sql_reader: Box<dyn config_reader::ReadConfig> =
+    let _config_sql_reader: Box<dyn config_reader::ReadConfig> =
         Box::new(config_reader::ConfigSqlReader::build(config_connection_string).unwrap());
 
-    let temperature_sensor: Box<dyn temperature_sensor::FetchTemperature> =
-        Box::new(temperature_sensor::TemperatureSensor {});
+    let _temperature_sensor_serial: Box<dyn temperature_sensor::FetchTemperature> =
+        Box::new(temperature_sensor::TemperatureSensorSerial {});
+    let _temperature_sensor_http: Box<dyn temperature_sensor::FetchTemperature> =
+        Box::new(temperature_sensor::TemperatureSensorHttp::default());
+
     let temperature_modifier: Box<dyn temperature_modifier::ModifyTemperature> =
         Box::new(temperature_modifier::TemperatureModifier {});
     let mut temperature_controller: temperature_controller::TemperatureController =
         temperature_controller::TemperatureController::build(
-            temperature_sensor,
+            _temperature_sensor_http,
             temperature_modifier,
-            config_file_reader,
+            _config_file_reader,
         );
     loop {
         temperature_controller
