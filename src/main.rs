@@ -9,7 +9,6 @@ pub mod temperature_value_provider;
 fn wait_before_polling() {
     std::thread::sleep(std::time::Duration::from_millis(3000));
 }
-//maybe split code from modules into multiple files
 //maybe add multithreaded implementation for temperature raising
 fn main() {
     let config_file_name = String::from("config.txt");
@@ -29,7 +28,7 @@ fn main() {
         Box::new(temperature_modifier::TemperatureModifier {});
     let mut temperature_controller: temperature_controller::TemperatureController =
         temperature_controller::TemperatureController::build(
-            _temperature_sensor_http,
+            _temperature_sensor_serial,
             temperature_modifier,
             _config_file_reader,
         );
