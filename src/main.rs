@@ -9,20 +9,21 @@ pub mod temperature_value_provider;
 fn wait_before_polling() {
     std::thread::sleep(std::time::Duration::from_millis(3000));
 }
-
+//maybe split code from modules into multiple files
+//maybe add multithreaded implementation for temperature raising
 fn main() {
     let config_file_name = String::from("config.txt");
     let _config_file_reader: Box<dyn config_reader::ReadConfig> =
-        Box::new(config_reader::ConfigFileReader::new(config_file_name));
+        Box::new(config_reader::file_reader::ConfigFileReader::new(config_file_name));
 
     let config_connection_string = String::from(r#"mysql://root:root@localhost:3306/thermostat"#);
     let _config_sql_reader: Box<dyn config_reader::ReadConfig> =
-        Box::new(config_reader::ConfigSqlReader::build(config_connection_string).unwrap());
+        Box::new(config_reader::db_reader::ConfigSqlReader::build(config_connection_string).unwrap());
 
     let _temperature_sensor_serial: Box<dyn temperature_sensor::FetchTemperature> =
-        Box::new(temperature_sensor::TemperatureSensorSerial {});
+        Box::new(temperature_sensor::serial::TemperatureSensorSerial {});
     let _temperature_sensor_http: Box<dyn temperature_sensor::FetchTemperature> =
-        Box::new(temperature_sensor::TemperatureSensorHttp::default());
+        Box::new(temperature_sensor::http::TemperatureSensorHttp::default());
 
     let temperature_modifier: Box<dyn temperature_modifier::ModifyTemperature> =
         Box::new(temperature_modifier::TemperatureModifier {});
