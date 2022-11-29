@@ -1,3 +1,3 @@
 # temperature-controller-rust
 
-Adaptation of the C++ temperature-controller project to Rust for the sake of learning.
+Temperature controller miniproject written Rust for the sake of learning.
